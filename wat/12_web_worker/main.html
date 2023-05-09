@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Hello, WebAssembly!</title>
+    </head>
+    <body>
+        
+        <script>
+            if (window && window.Worker){
+                const worker = new Worker('worker.js');
+                worker.postMessage({type: "loadWasm"});
+                worker.onmessage = function(message){
+                    if (message.data.type === "wasmLoaded"){
+                        worker.postMessage({type: "addInt", a: 5, b:17})
+                    } else if (message.data.type === "addIntResult"){
+                        document.getElementById("addIntResult").innerHTML = message.data.result;
+                        console.log(message.data.result)
+                    }
+                }   
+            } else {
+                console.log("Workers are not supported")
+            }
+        </script>
+
+        <p id="addIntResult"></p>
+    </body>
+</html>

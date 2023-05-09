@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport">
+ <title>Ball in JS</title>
+</head>
+<body>
+ <canvas id="canvas" width="512" height="512"></canvas>
+ <span id="frameRate"></span>
+ <script>
+
+  const cnvs_size = 512; 
+  const object_count = 1500;
+  const object_radius = 1.7;
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+
+
+  
+function Ball(xx, yy, vx, vy, color) {
+    this.xx = xx;
+    this.yy = yy;
+    this.vx = vx;
+    this.vy = vy;
+    this.color = color
+      
+    this.convertNumber = (num) => {
+        num = num % cnvs_size;
+        if (num < 0) {
+        num += cnvs_size;
+    }
+    return num;
+    }
+
+    this.move = () => {
+        this.xx = this.convertNumber(this.xx + this.vx);
+        this.yy = this.convertNumber(this.yy + this.vy);
+        
+    }
+
+    this.draw = () => {
+        ctx.beginPath();
+        ctx.arc(this.xx, this.yy, object_radius, 0, Math.PI * 2);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    this.solveCollission = (c2) => {
+        let dx = c2.xx - this.xx;
+        let dy = c2.yy - this.yy;
+        let d =  Math.sqrt(dx**2 + dy**2);
+        if (d < object_radius *2){
+            this.vx *= -1;
+            this.vy *= -1;
+            c2.vx *= -1;
+            c2.vy *= -1;
+            this.xx += this.vx;
+            this.yy += this.vy;
+            c2.xx += this.vx;
+            c2.yy += this.vy;
+        }
+    }
+ }
+
+ let balls = new Array();
+ let xx, yy, vxx, vyy;
+ for (let i = 0; i < object_count; i++) {
+    xx =  Math.floor(Math.random() * cnvs_size);
+    yy = Math.floor(Math.random() * (cnvs_size-2*object_radius) + object_radius);
+    tmp = (Math.round(Math.random() * 4) - 2);
+    vxx = this.vx == 0 ? 1 : tmp;
+    tmp = (Math.round(Math.random() * 4) - 2);
+    vyy = this.vy == 0 ? 1 : tmp;
+    color = 0xff_00_00_ff
+    balls.push(new Ball(xx,yy, vxx, vyy));
+ } 
+
+ var animation_wasm;
+  var counter = 0;
+  var lastTime;
+  var tm;
+
+ function animate() {
+ // clear
+
+ counter++;
+  if (counter == 100) {
+    tm = Date.now();
+    frameRate.innerHTML = (100000.0/(tm - lastTime)).toString();
+    lastTime = tm;
+  }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+ctx.rect(0, 0, cnvs_size, cnvs_size);
+ctx.fillStyle = "blue";
+ctx.fill();
+ctx.closePath()
+  for (let i = 0; i < object_count; i++) {
+   balls[i].move();
+  }
+ // loop and render
+  for (i = 0; i < object_count; i++) {
+   for (let j = 0; j < object_count; j++) {
+    if (i === j) {
+     continue;
+    }
+    
+    balls[i].solveCollission(balls[j]);
+   }
+   
+   balls[i].draw();
+ }
+ requestAnimationFrame(animate);
+ }
+ lastTime = Date.now();
+  requestAnimationFrame(animate);
+ </script>
+</body>
+</html>

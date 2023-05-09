@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initialscale=1.0">
+ <title>Ball movement</title>
+</head>
+<body style="background-color: brown;">
+ <canvas id="cnvs" width="512" height="512"></canvas>
+ <br>
+ <span id="frameRate"></span>
+ <script>
+   const cnvs_size = 512; 
+   const bg_color = 0xff_ff_00_00; //background color (blue)
+   const pixel_count = cnvs_size * cnvs_size;
+   const object_count = 1500;
+   const object_radius = 3;
+   const object_base_8 = pixel_count*4;
+   const object_stride_8 = 20;
+   const x_offset = 0;
+   const y_offset = 4;
+   const vx_offset = 8;
+   const vy_offset = 12;
+   const color_offset = 16;
+   
+   const canvas = document.getElementById("cnvs");
+   const frameRate = document.getElementById("frameRate");
+   const ctx = canvas.getContext("2d");
+   ctx.clearRect(0, 0, cnvs_size, cnvs_size);
+
+   const memory = new WebAssembly.Memory({initial: 33});
+   const mem_i8 = new Uint8Array(memory.buffer); // 8-bit view
+   const mem_i32 = new Uint32Array(memory.buffer); //32-bit view
+
+
+   const object_base_32 = object_base_8/4;
+   const object_stride_32 = object_stride_8/4;  
+
+   const start = (object_base_8 + object_count * object_stride_8)/4
+   const end = start + pixel_count
+  
+   
+  
+
+   const importObject = {
+    env: {
+        buffer: memory,
+        cnvs_size: cnvs_size,
+        bg_color: bg_color,
+        object_radius: object_radius,
+        object_count: object_count,
+        objects_base: object_base_8,
+        x_offset: x_offset,
+        y_offset: y_offset,
+        vx_offset: vx_offset,
+        vy_offset: vy_offset,
+        color_offset: color_offset,
+        start_bg_mem: start*4,
+        log: function(n, factorial) { // log n factorial to output tag
+ console.log(`zaznam: ${n}! = ${factorial}`);
+          // clear: function() {
+
+          // }
+ }
+    }
+   };
+
+
+   const image_data = new ImageData( new Uint8ClampedArray(memory.buffer, 0,
+   pixel_count*4),
+   cnvs_size,
+   cnvs_size );
+   
+   for( let i = 0; i < object_count * object_stride_32; i += object_stride_32) {
+    mem_i32[object_base_32 + i] = Math.floor(Math.random() * (cnvs_size-2*object_radius) + object_radius); //x
+    mem_i32[object_base_32 + i + 1] = Math.floor(Math.random() * (cnvs_size-2*object_radius) + object_radius); //y 
+    tmp = (Math.round(Math.random() * 4) - 2);
+    mem_i32[object_base_32 + i + 2] = tmp == 0 ? 1 : tmp  //vx
+    tmp = (Math.round(Math.random() * 4) - 2);
+    mem_i32[object_base_32 + i + 3] = tmp == 0 ? 1 : tmp; //vy
+    mem_i32[object_base_32 + i + 4] = 0xff_00_00_ff
+    }
+    
+   console.log("init")
+    console.log(start)
+   console.log(end)
+  for (let i = start; i < end; i ++ ){
+    mem_i32[i] = 0xff_ff_00_00;
+  }
+
+    // mem_i32[object_base_32 ] = 100
+    // mem_i32[object_base_32 +  1] = 100
+    // mem_i32[object_base_32 + 2] = 2
+    // mem_i32[object_base_32 + 3] = 3
+    // mem_i32[object_base_32 + 4] = 0xff_00_ff_00
+    // mem_i32[object_base_32 + 5] = 420
+    // mem_i32[object_base_32 + 6] = 500
+    // mem_i32[object_base_32 + 7] = -1
+    // mem_i32[object_base_32 + 8] = -1
+    // mem_i32[object_base_32 + 9] = 0xff_00_00_ff
+
+  var animation_wasm;
+  var counter = 0;
+  var lastTime;
+  var tm;
+
+  function animate() {
+  counter++;
+  if (counter == 100) {
+    tm = Date.now();
+    frameRate.innerHTML = (100000.0/(tm - lastTime)).toString();
+    lastTime = tm;
+  }
+  animation_wasm(); // wasm function that generates the image data
+  // var sum = 0
+  // for( let i = 0; i < object_count * object_stride_32; i += object_stride_32){
+  //   sum += mem_i32[object_base_32 + i + 2] + mem_i32[object_base_32 + i + 3]
+  // }
+  // console.log(sum);
+  ctx.putImageData(image_data, 0, 0); // render pixel data
+  requestAnimationFrame(animate);
+ }
+
+ (async () => {
+ let obj = await WebAssembly.instantiateStreaming( 
+  fetch('ball.wasm'),importObject );
+ animation_wasm = obj.instance.exports.main;
+ lastTime = Date.now();
+ requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
