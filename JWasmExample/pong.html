@@ -1,0 +1,49 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Pong Game</title>
+    <style>
+        canvas {
+            background-color: black;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas" width="640" height="480"></canvas>
+<script>
+    async function startGame() {
+        var canvas = document.getElementById("canvas");
+        var module = new WebAssembly.Module(await fetch("/build/distributions/Pong.wasm").then(response => response.arrayBuffer()));
+        var instance = new WebAssembly.Instance(module, {env: {memory: new WebAssembly.Memory({initial: 256})}});
+        var ctx = canvas.getContext("2d");
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            instance.exports.tick();
+            instance.exports.render(ctx);
+            requestAnimationFrame(draw);
+        }
+
+        function onKeyDown(event) {
+            instance.exports.onKeyDown(event.keyCode);
+        }
+
+        function onKeyUp(event) {
+            instance.exports.onKeyUp(event.keyCode);
+        }
+
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("keyup", onKeyUp);
+
+        draw();
+    }
+
+    startGame();
+</script>
+</body>
+</html>

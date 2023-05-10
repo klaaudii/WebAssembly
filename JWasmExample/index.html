@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/build/distributions/FirstWasm.wasm.js"></script>
+</head>
+<body>
+<script>
+    (async () => {
+        let obj = await WebAssembly.instantiateStreaming(fetch('/build/distributions/FirstWasm.wasm'), wasmImports);
+        wasmImports.instance = obj.instance;
+        // console.log(obj.instance.exports.sum(10,20));
+        console.log(obj.instance.exports.factorial(5));
+    })();
+</script>
+</body>
+</html>

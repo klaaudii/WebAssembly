@@ -1,0 +1,67 @@
+buildscript {
+    repositories {
+        maven { url uri('https://jitpack.io') }
+    }
+    dependencies {
+        classpath 'com.github.i-net-software:jwebassembly-gradle:master-SNAPSHOT'
+    }
+}
+
+
+plugins {
+    id 'java'
+}
+apply plugin: 'de.inetsoftware.jwebassembly'
+wasm {
+    //format = 'Text'
+    compilerVersion = 'com.github.i-net-software:jwebassembly:master-SNAPSHOT'
+
+    //Write method and parameter names into the output *.wasm file.
+    //The file will be approximate 10% larger. And it generate a source map.
+    //With a source map you can see in the debugger of the browser your source code if available.
+    debugNames = true // configuration options for the wasm task go here
+}
+
+group 'org.example'
+//version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+//    compileOnly 'com.github.i-net-software:jwebassembly-api:master-SNAPSHOT'
+//    //implementation 'com.github.i-net-software:jwebassembly-api:master-SNAPSHOT'
+//    implementation 'de.inetsoftware:jwebassembly-api:+'
+//    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+//    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    compileOnly 'com.github.i-net-software:jwebassembly-api:master-SNAPSHOT'
+
+
+    testImplementation 'com.github.i-net-software:jwebassembly-api:master-SNAPSHOT'
+    testImplementation 'junit:junit:+'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+archivesBaseName = 'FirstWasm'
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java/org.example/'
+        }
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+
+apply plugin:'application'
+mainClassName = "org.example.Main"
+
+
+
