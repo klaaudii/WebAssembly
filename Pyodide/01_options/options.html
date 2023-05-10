@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
+  </head>
+
+  <body>
+    <p id="title">Pyodide app</p>
+
+    <script>
+      async function main() {
+
+        // downloads the Pyodide package and sets up the environment necessary to run Python code in the browser. 
+        // This includes compiling Python modules and making them available to the interpreter, 
+        // as well as setting up the communication channel between the Python interpreter and the browser's JavaScript environment.
+        let pyodide = await loadPyodide();
+
+        pyodide.runPython(`
+        print('Hello world, from the browser!')
+        ## js represents the global object window, so js scope can be accessed from python using the js module
+        import js
+        js.document.title = "Hello from python"
+        `);
+
+
+        pyodide.runPythonAsync(`
+        total = 0
+        for i in range(1000000):
+          total += i
+        print(f'total: {total}')
+        `);
+
+      
+        await fetch('options.py').then(response => response.text()).then( code => pyodide.runPython(code));
+        pyodide.globals.get('hello')();
+
+
+        pyodide.globals.set("x", 4)
+        pyodide.globals.set("square", x => x*x)
+        console.log(pyodide.globals.get('square')(pyodide.globals.get('x')))
+
+
+        await pyodide.loadPackage("numpy");
+        pyodide.runPython(`
+        import numpy as np
+        a = [[1, 0], [0, 1]]
+        b = [[4, 1], [2, 2]]
+        print(np.dot(a, b))`)
+      };
+
+      main();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
+  </head>
+
+  <body>
+    <p id="title">My first Pyodide app</p>
+
+    <script>
+
+      function is_prime(n) {
+        for (let i = 2; i <= Math.sqrt(n); i++) {
+          if (n % i == 0) {
+            return false;
+           }
+        }
+        return true;
+      }
+
+      function run_js(){
+        var start_time = performance.now();
+        is_prime_bool = is_prime(999998727899999);
+        var end_time = performance.now();
+        console.log('JavaScript:', is_prime_bool, 'in', (end_time - start_time) / 1000, 'seconds');
+      }
+
+      async function run_pyodide() {
+        let pyodide = await loadPyodide();
+        var start_time = performance.now();
+        pyodide.runPython(`
+        import math
+        is_prime_bool = False
+        def is_prime(n):
+          for i in range(2,int(math.sqrt(n))+1):
+            if (n%i) == 0:
+              return False
+          return True
+        is_prime_bool = is_prime(999998727899999)
+        `); 
+        var end_time = performance.now();
+        console.log('Pyodide:', pyodide.globals.get('is_prime_bool'), 'in', (end_time - start_time) / 1000, 'seconds');
+      };
+      
+      run_js()
+      run_pyodide()
+      
+
+      
+      
+
+    </script>
+  </body>
+</html>

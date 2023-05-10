@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Pong</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script type="text/javascript">
+      async function loadPyodideAndRun() {
+        let pyodide = await loadPyodide();
+        // Get the canvas
+        const canvas = document.getElementById("canvas");
+      
+        //  Pygame is not available
+        //await pyodide.loadPackage("pygame");
+        await pyodide.loadPackage("numpy");
+        await pyodide.loadPackage("regex");
+        await pyodide.loadPackage("pyxel");
+
+
+        // Run the Python code
+        const pythonCode = await fetch('ball.py').then(response => response.text())
+        pyodide.runPython(pythonCode);
+      }
+      loadPyodideAndRun();
+    </script>
+  </body>
+</html>
